@@ -39,7 +39,7 @@ class qtype_crossword_edit_form extends question_edit_form {
 
     protected function definition_inner($mform): void {
         // Set grid options.
-        $this->gridoptions = range(3, 15);
+        $this->gridoptions = range(3, 30);
         // Add grid height field.
         $mform->addElement('select', 'numrows',
             get_string('numberofrows', 'qtype_crossword'), $this->gridoptions, null);
@@ -176,7 +176,7 @@ class qtype_crossword_edit_form extends question_edit_form {
         $mform->addElement('button', 'refresh', get_string('preview', 'qtype_crossword'), ['disabled' => 'disabled']);
 
         // Add preview section.
-        $mform->addElement('html', '<div class="crossword-contain" id="crossword"></div>');
+        $mform->addElement('html', '<div class="crossword-contain mx-3" id="crossword"></div>');
         // Call js to render preview section.
         $options = new stdClass();
         $options->element = '#id_refresh';
@@ -195,11 +195,10 @@ class qtype_crossword_edit_form extends question_edit_form {
      * @return array Elements rows index and columns index.
      */
     protected function add_coordinates_input(object $mform): array {
-        $alphabetrange = range('A', 'Z');
         $numberrange = range(1, 100);
         $repeated = [];
 
-        $columnoptions = array_slice($alphabetrange, 0, $this->numcolumns);
+        $columnoptions = $this->generateAlphabetList(0, $this->numcolumns);
         $rowoptions = array_slice($numberrange, 0, $this->numrows);
 
         // Add row index field.
@@ -320,7 +319,7 @@ class qtype_crossword_edit_form extends question_edit_form {
     private function check_word_length(array $data, int $iteral): bool {
         $answerlength = mb_strlen(trim($data['answer'][$iteral]));
         $orientation = (int) $data['orientation'][$iteral];
-        $griddata = range(3, 15);
+        $griddata = range(3, 30);
         $startrow = $data['startrow'][$iteral] ?? null;
         $startcolumn = $data['startcolumn'][$iteral] ?? null;
 
@@ -529,6 +528,31 @@ class qtype_crossword_edit_form extends question_edit_form {
         return $points;
     }
 
+    /**
+     * Generate the alphabet list in the range.
+     *
+     * @param int $start The start number.
+     * @param int $end The end number.
+     *
+     * @return array The alphabet list.
+     */
+    function generateAlphabetList($start, $end): array {
+        $range = range('A', 'Z');
+        if ($end <= 26) {
+            return array_slice($range, $start, $end);
+        }
+        $remain = $end - 26;
+        $addition = [];
+        $j = 0;
+        for ($i = 1; $i <= $remain; $i++) {
+            if (!isset($range[$j])) {
+                $j = 0;
+            }
+            $addition[] = $range[ceil($i/26) - 1] . $range[$j];
+            $j++;
+        }
+        return array_merge($range, $addition);
+    }
 
     /**
      * Returns the question type name.
