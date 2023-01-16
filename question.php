@@ -144,4 +144,29 @@ class qtype_crossword_question extends question_graded_automatically {
         });
         return $response;
     }
+
+    public function check_file_access($qa, $options, $component, $filearea,
+        $args, $forcedownload) {
+
+        if ($component == 'question' && $filearea == 'hint') {
+            return $this->check_hint_file_access($qa, $options, $args);
+        }
+
+        if ($component === 'question' && ($filearea === 'clue' || $filearea === 'feedback')) {
+            $question = $qa->get_question(false);
+            foreach ($question->answers as $answer) {
+                if ($answer->answerid == $args[0]) {
+                    return true;
+                }
+            }
+        }
+
+        if ($component == 'question' && in_array($filearea,
+                ['correctfeedback', 'partiallycorrectfeedback', 'incorrectfeedback'])) {
+            return $this->check_combined_feedback_file_access($qa, $options, $filearea, $args);
+        }
+
+        return parent::check_file_access($qa, $options, $component, $filearea,
+            $args, $forcedownload);
+    }
 }
