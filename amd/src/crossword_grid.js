@@ -518,13 +518,13 @@ export class CrosswordGrid extends CrosswordQuestion {
         if (readonly) {
             return;
         }
-        inputEl.addEventListener('keypress', (e) => {
+        inputEl.addEventListener('input', (e) => {
             e.preventDefault();
             const {wordNumber} = this.options;
             const inputEl = e.target;
             const code = inputEl.dataset.code;
-            let value = e.key.toUpperCase();
-            if (this.replaceText(e.key) === '') {
+            let value = e.data.toUpperCase();
+            if (this.replaceText(e.data) === '') {
                 return false;
             }
             // Filter value.
@@ -539,7 +539,7 @@ export class CrosswordGrid extends CrosswordQuestion {
                     `g[data-word*='(${wordNumber})'][data-letterindex='${letterIndex + 1}']`
                 );
                 // Interact with clue.
-                this.bindDataToClueInput(textEl.closest('g'), e.key);
+                this.bindDataToClueInput(textEl.closest('g'), e.data);
                 if (nextCellEl) {
                     nextCellEl.dispatchEvent(new Event('click'));
                 }

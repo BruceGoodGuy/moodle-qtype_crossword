@@ -83,17 +83,17 @@ export class CrosswordClue extends CrosswordQuestion {
             e.target.dispatchEvent(new Event('click'));
         });
 
-        el.addEventListener('keypress', (e) => {
+        el.addEventListener('beforeinput', (e) => {
             e.preventDefault();
             const {words, wordNumber} = this.options;
             const word = words.find(o => o.number === parseInt(wordNumber));
-            let {key, target} = e;
+            let {data, target} = e;
             let startIndex = target.selectionStart;
-            key = this.replaceText(key).normalize('NFKC');
-            if (key === '') {
+            data = this.replaceText(data).normalize('NFKC');
+            if (data === '') {
                 return;
             }
-            this.handleTypingData(e, wordNumber, word, startIndex, key);
+            this.handleTypingData(e, wordNumber, word, startIndex, data);
         });
 
         el.addEventListener('compositionstart', (evt) => {
