@@ -377,5 +377,12 @@ export class CrosswordClue extends CrosswordQuestion {
             }
             currentSelection++;
         }
+        requestAnimationFrame(() => {
+            if (ignoreIndexes.includes(currentSelection)) {
+                currentSelection++;
+            }
+            // Set the selection range
+            event.target.setSelectionRange(currentSelection, currentSelection);
+        });
     }
 }
