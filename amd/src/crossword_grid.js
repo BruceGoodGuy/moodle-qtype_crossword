@@ -562,26 +562,37 @@ export class CrosswordGrid extends CrosswordQuestion {
     handleInsertTextEventForGridInput(event, value) {
         const {wordNumber, words} = this.options;
         const inputEl = event.target;
-        const code = inputEl.dataset.code;
+        let code = inputEl.dataset.code;
         const upperText = value.toUpperCase();
         if (this.replaceText(value) === '') {
             return;
         }
-        // Filter value.
-        if (code) {
+        let chars = upperText.split('');
+        let letterIndex;
+        const wordObj = words.find(word => word.number === parseInt(wordNumber));
+        for (let char of chars) {
+            // Find the text element in the g element based on the code.
             const textEl = this.options.crosswordEl.querySelector(`g[data-code='${code}'] text.crossword-cell-text`);
-            if (!textEl) {
+            if (!textEl || this.replaceText(char) === '') {
+                continue;
+            }
+            // Set char into text element.
+            textEl.innerHTML = char;
+            if (!letterIndex) {
+                // Set the letter index based on the text element for the first time.
+                letterIndex = parseInt(textEl.closest('g').dataset.letterindex);
+            }
+            // The next `charIndex` will not be equal to `letterIndex + 1` when the answer contains special characters.
+            const [charIndex, nextCellEl] = this.findTheClosestCell(wordNumber, wordObj, letterIndex + 1);
+            this.bindDataToClueInput(textEl.closest('g'), char);
+            if (!nextCellEl) {
                 return;
             }
-            textEl.innerHTML = upperText;
-            const letterIndex = parseInt(textEl.closest('g').dataset.letterindex);
-            const wordObj = words.find(word => word.number === parseInt(wordNumber));
-            const nextCellEl = this.findTheClosestCell(wordNumber, wordObj, letterIndex + 1).pop() ?? null;
-            // Interact with clue.
-            this.bindDataToClueInput(textEl.closest('g'), value);
-            if (nextCellEl) {
-                nextCellEl.dispatchEvent(new Event('click'));
-            }
+            // Update code.
+            code = nextCellEl.dataset.code;
+            // Update `letterIndex`.
+            letterIndex = charIndex;
+            nextCellEl.dispatchEvent(new Event('click'));
         }
     }
 
@@ -595,12 +606,12 @@ export class CrosswordGrid extends CrosswordQuestion {
         if (readonly) {
             return;
         }
-        inputEl.addEventListener('input', (e) => {
-            e.preventDefault();
-            if (e.inputType === 'insertText') {
+
+        // Handle IME input.
+        inputEl.addEventListener('beforeinput', (e) => {
+            if (e.inputType === 'insertText' && e.data) {
                 this.handleInsertTextEventForGridInput(e, e.data);
             }
-            return true;
         });
 
         inputEl.addEventListener('keypress', (e) => {

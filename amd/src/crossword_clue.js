@@ -98,6 +98,7 @@ export class CrosswordClue extends CrosswordQuestion {
         el.addEventListener('focus', (e) => {
             e.target.dispatchEvent(new Event('click'));
         });
+
         el.addEventListener('beforeinput', (e) => {
             if (e.inputType === 'insertText' && e.data) {
                 this.handleInsertedCharacterToElement(e, e.data);
@@ -367,11 +368,14 @@ export class CrosswordClue extends CrosswordQuestion {
      * @param {Number} currentSelection The position of cursor.
      */
     insertCharacters(event, value, wordNumber, word, currentSelection) {
-        value.split('').forEach(char => {
-            const result = this.handleTypingData(event, wordNumber, word, currentSelection, char);
-            if (result) {
-                currentSelection++;
+        const ignoreIndexes = this.getIgnoreIndexByAnswerNumber(wordNumber);
+        const chars = value.split('');
+        while (currentSelection < word.length && chars.length !== 0) {
+            // Skip handling special characters.
+            if (!ignoreIndexes.includes(currentSelection)) {
+                this.handleTypingData(event, wordNumber, word, currentSelection, chars.shift());
             }
-        });
+            currentSelection++;
+        }
     }
 }
